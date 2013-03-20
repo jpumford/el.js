@@ -8,14 +8,40 @@
 * http://en.wikipedia.org/wiki/MIT_License
 */
 window.el = (function () {
-  var el = function(tagName, attrs, child) {
+  var el = function() {
     // Pattern to match id & class names
     var pattern = /([a-z]+|#[\w-\d]+|\.[\w\d-]+)/g
 
-    // does the user pass attributes in, if not set an empty object up
-    var attrs = typeof attrs !== 'undefined' ? attrs : {};
-    var child = typeof child !== 'undefined' ? child : [];
-    child = child instanceof Array ? child : [child];
+    // set defaults
+    var attrs = {}, child = [], tagName = '';
+    // iterate through args and guess their types
+    for (var i in arguments) {
+      switch (typeof arguments[i]) {
+        case 'object':
+          // an array, dictionary, or HTML element?
+          if (arguments[i] instanceof Array) {
+            child = child.concat(arguments[i]);
+          } else if (arguments[i] instanceof HTMLElement) {
+            // @todo Test on older versions of IE
+            child.push(arguments[i]);
+          } else {
+            // @todo Merge these two objects intelligently
+            attrs = arguments[i];
+          }
+          break;
+        case 'string':
+          //do we already have a name?
+          if (tagName !== '') {
+            child = [arguments[i]];
+          } else {
+            tagName = arguments[i];
+          }
+          break;
+        default:
+          console.log('el.js: Invalid argument ' + arguments[i]);
+          break;
+      }
+    }
 
     // run the pattern over the tagname an attempt to pull out class & id attributes
     // shift the first record out as it's the element name
